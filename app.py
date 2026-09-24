@@ -1,5 +1,13 @@
 from pathlib import Path
+import sys
 import json
+
+# Streamlit Cloud runs app.py from the repository root. Make the src-layout package importable
+# even when the repository has not been installed with `pip install -e .` yet.
+ROOT = Path(__file__).resolve().parent
+SRC = ROOT / "src"
+if SRC.is_dir() and str(SRC) not in sys.path:
+    sys.path.insert(0, str(SRC))
 import tempfile
 import streamlit as st
 from bix.services.extract import extract_project
