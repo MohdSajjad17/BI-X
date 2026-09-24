@@ -21,11 +21,17 @@ st.set_page_config(page_title="BI-X", page_icon="🔷", layout="wide")
 st.title("🔷 BI-X")
 st.caption("Bidirectional BI metadata reverse-engineering, translation and generation")
 
-@st.cache_data(show_spinner=False)
-def run_extract(data: bytes, filename: str, include_raw: bool):
-    with tempfile.TemporaryDirectory() as td:
-        p = Path(td) / filename
-        p.write_bytes(data)
+def run_extract(uploaded_file, filename: str, include_raw: bool):
+    # Stream the uploaded object to disk instead of creating another full-size
+    # bytes copy in memory. This matters for TWB/TWBX files hundreds of MBs+.
+    with tempfile.TemporaryDirectory(prefix="bix-upload-") as td:
+        p = Path(td) / Path(filename).name
+        with p.open("wb") as target:
+            while True:
+                chunk = uploaded_file.read(8 * 1024 * 1024)
+                if not chunk:
+                    break
+                target.write(chunk)
         return extract_project(p, include_raw=include_raw)
 
 tabs = st.tabs(["Extract", "AI Translator", "Generate", "Compare", "Lineage", "Validation"])
@@ -36,7 +42,7 @@ with tabs[0]:
     include_raw = st.checkbox("Keep raw visual/report definitions", value=False)
     if uploaded and st.button("Extract metadata", type="primary"):
         with st.spinner("Reading project..."):
-            result = run_extract(uploaded.getvalue(), uploaded.name, include_raw)
+            result = run_extract(uploaded, uploaded.name, include_raw)
         st.session_state["bix_ir"] = result
         st.success(f"Extracted {result['platform']} project: {result['identity']['name']}")
     ir = st.session_state.get("bix_ir")
