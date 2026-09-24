@@ -1,0 +1,4 @@
+# BI-X Streamlit configuration
+# Allow large BI project uploads (including TWB/TWBX files > 200 MB).
+[server]
+maxUploadSize = 2048
