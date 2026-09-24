@@ -5,7 +5,7 @@ import tempfile
 from pathlib import Path
 from typing import Any
 
-from . import reference
+from . import powerbi_reference as reference
 
 
 def _table_to_ir(table: dict[str, Any]) -> dict[str, Any]:
